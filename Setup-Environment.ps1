@@ -3,7 +3,6 @@ param
     [Parameter(Mandatory = $true)]
     [string]$DeploymentName,
     [Parameter(Mandatory = $true)]
-    [string]$ResourceGroupName,
     [string]$Location,
     [switch]$IsLocal,
     [switch]$SkipInfrastructure,
@@ -20,7 +19,6 @@ else {
     Write-Host "Deploying infrastructure..."
     $InfrastructureOutputs = (./infra/Deploy-Infrastructure.ps1 `
             -DeploymentName $DeploymentName `
-            -ResourceGroupName $ResourceGroupName `
             -Location $Location `
             -WhatIf:$WhatIf)
 
