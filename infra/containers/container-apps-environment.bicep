@@ -103,8 +103,10 @@ resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2024-10-02-
     workloadProfiles: concat(
       [
         {
-          name: 'Consumption'
-          workloadProfileType: 'Consumption'
+          name: 'Dedicated-D4'
+          workloadProfileType: 'D4'
+          minimumCount: 1
+          maximumCount: 3
         }
       ],
       workloadProfiles

@@ -27,7 +27,6 @@ if ($whatIf) {
             --template-file '../core.bicep' `
             --parameters '../core.bicepparam' `
             --parameters workloadName=$deploymentName `
-            --parameters location=$location `
             --parameters identities="[]" `
             --no-pretty-print) | ConvertFrom-Json
 
@@ -41,9 +40,19 @@ if ($whatIf) {
     exit
 }
 
-$deploymentOutputs = (az deployment sub create `
+# $deploymentOutputs = (az deployment sub create `
+#         --name $deploymentName `
+#         --location $location `
+#         --template-file './main.bicep' `
+#         --parameters './main.bicepparam' `
+#         --parameters workloadName=$deploymentName `
+#         --parameters location=$location `
+#         --parameters identities="[]" `
+#         --query properties.outputs -o json) | ConvertFrom-Json
+
+$deploymentOutputs = (az deployment group create `
         --name $deploymentName `
-        --location $location `
+        --resource-group $deploymentName `
         --template-file '../core.bicep' `
         --parameters '../core.bicepparam' `
         --parameters workloadName=$deploymentName `

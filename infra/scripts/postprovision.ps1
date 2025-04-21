@@ -28,7 +28,8 @@ Write-Host "Building ${ContainerImageName} image..."
 
 az acr login --name $ContainerRegistryName --resource-group $AzureResourceGroup
 
-docker build -t $ContainerImageName -f ../../../src/AIDocumentPipeline/Dockerfile ../../../src/AIDocumentPipeline/.
+# docker build -t $ContainerImageName -f ../../../src/AIDocumentPipeline/Dockerfile ../../../src/AIDocumentPipeline/.
+docker build -t $ContainerImageName -f ./src/AIDocumentPipeline/Dockerfile ./src/AIDocumentPipeline/.
 
 Write-Host "Pushing ${ContainerImageName} image to Azure..."
 

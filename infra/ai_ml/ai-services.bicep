@@ -193,56 +193,56 @@ resource raiPolicy 'Microsoft.CognitiveServices/accounts/raiPolicies@2024-10-01'
       contentFilters: [
         {
           name: 'violence'
-          SeverityThreshold: raiPolicy.?prompt.?violence.?SeverityThreshold ?? 'High'
+          severityThreshold: raiPolicy.?prompt.?violence.?SeverityThreshold ?? 'High'
           blocking: raiPolicy.?prompt.?violence.?blocking ?? true
           enabled: raiPolicy.?prompt.?violence.?enabled ?? true
           source: 'Prompt'
         }
         {
           name: 'violence'
-          SeverityThreshold: raiPolicy.?completion.?violence.?SeverityThreshold ?? 'High'
+          severityThreshold: raiPolicy.?completion.?violence.?SeverityThreshold ?? 'High'
           blocking: raiPolicy.?completion.?violence.?blocking ?? true
           enabled: raiPolicy.?completion.?violence.?enabled ?? true
           source: 'Completion'
         }
         {
           name: 'hate'
-          SeverityThreshold: raiPolicy.?prompt.?hate.?SeverityThreshold ?? 'High'
+          severityThreshold: raiPolicy.?prompt.?hate.?SeverityThreshold ?? 'High'
           blocking: raiPolicy.?prompt.?hate.?blocking ?? true
           enabled: raiPolicy.?prompt.?hate.?enabled ?? true
           source: 'Prompt'
         }
         {
           name: 'hate'
-          SeverityThreshold: raiPolicy.?completion.?hate.?SeverityThreshold ?? 'High'
+          severityThreshold: raiPolicy.?completion.?hate.?SeverityThreshold ?? 'High'
           blocking: raiPolicy.?completion.?hate.?blocking ?? true
           enabled: raiPolicy.?completion.?hate.?enabled ?? true
           source: 'Completion'
         }
         {
           name: 'sexual'
-          SeverityThreshold: raiPolicy.?prompt.?sexual.?SeverityThreshold ?? 'High'
+          severityThreshold: raiPolicy.?prompt.?sexual.?SeverityThreshold ?? 'High'
           blocking: raiPolicy.?prompt.?sexual.?blocking ?? true
           enabled: raiPolicy.?prompt.?sexual.?enabled ?? true
           source: 'Prompt'
         }
         {
           name: 'sexual'
-          SeverityThreshold: raiPolicy.?completion.?sexual.?SeverityThreshold ?? 'High'
+          severityThreshold: raiPolicy.?completion.?sexual.?SeverityThreshold ?? 'High'
           blocking: raiPolicy.?completion.?sexual.?blocking ?? true
           enabled: raiPolicy.?completion.?sexual.?enabled ?? true
           source: 'Completion'
         }
         {
           name: 'selfharm'
-          SeverityThreshold: raiPolicy.?prompt.?selfharm.?SeverityThreshold ?? 'High'
+          severityThreshold: raiPolicy.?prompt.?selfharm.?SeverityThreshold ?? 'High'
           blocking: raiPolicy.?prompt.?selfharm.?blocking ?? true
           enabled: raiPolicy.?prompt.?selfharm.?enabled ?? true
           source: 'Prompt'
         }
         {
           name: 'selfharm'
-          SeverityThreshold: raiPolicy.?completion.?selfharm.?SeverityThreshold ?? 'High'
+          severityThreshold: raiPolicy.?completion.?selfharm.?SeverityThreshold ?? 'High'
           blocking: raiPolicy.?completion.?selfharm.?blocking ?? true
           enabled: raiPolicy.?completion.?selfharm.?enabled ?? true
           source: 'Completion'

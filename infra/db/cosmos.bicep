@@ -45,10 +45,10 @@ param systemManagedFailover bool = true
 @description('The name for the database')
 param databaseName string
 
-@description('Maximum autoscale throughput for the container')
-@minValue(1000)
-@maxValue(1000000)
-param autoscaleMaxThroughput int = 1000
+// @description('Maximum autoscale throughput for the container')
+// @minValue(1000)
+// @maxValue(1000000)
+// param autoscaleMaxThroughput int = 1000
 
 @description('Time to Live for data in analytical store. (-1 no expiry)')
 @minValue(-1)
@@ -94,7 +94,7 @@ resource existingAccount 'Microsoft.DocumentDB/databaseAccounts@2024-12-01-previ
 resource newAccount 'Microsoft.DocumentDB/databaseAccounts@2024-12-01-preview' = if (!cosmosDbReuse && deployCosmosDb) {
   name: toLower(accountName)
   kind: 'GlobalDocumentDB'
-  location: location
+  // location: location
   tags: tags
   properties: {
     consistencyPolicy: consistencyPolicy[defaultConsistencyLevel]
@@ -103,6 +103,11 @@ resource newAccount 'Microsoft.DocumentDB/databaseAccounts@2024-12-01-preview' =
     enableAutomaticFailover: systemManagedFailover
     publicNetworkAccess: publicNetworkAccess
     enableAnalyticalStorage: true
+    capabilities: [
+      {
+        name: 'EnableServerless'
+      }
+    ]
   }
 }
 
@@ -139,11 +144,6 @@ resource conversationsContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDataba
       }
       defaultTtl: 86400
     }
-    options: {
-      autoscaleSettings: {
-        maxThroughput: autoscaleMaxThroughput
-      }
-    }
   }
 }
 
@@ -163,11 +163,6 @@ resource modelsContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/con
       indexingPolicy: {
         indexingMode: 'none'
         automatic: false
-      }
-    }
-    options: {
-      autoscaleSettings: {
-        maxThroughput: autoscaleMaxThroughput
       }
     }
   }

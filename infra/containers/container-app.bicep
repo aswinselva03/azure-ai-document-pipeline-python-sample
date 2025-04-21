@@ -24,7 +24,7 @@ type ingressConfigInfo = {
 @description('Information about the resource configuration for the container app.')
 type resourceConfigInfo = {
   @description('CPU limit for the container.')
-  cpu: string
+  cpu: int
   @description('Memory limit for the container.')
   memory: string
 }
@@ -69,7 +69,7 @@ param containerAppsEnvironmentId string
 @description('ID for the Managed Identity associated with the Container App.')
 param containerAppIdentityId string
 @description('Name for the Workload Profile associated with the Container App. Defaults to Consumption.')
-param workloadProfileName string = 'Consumption'
+param workloadProfileName string = 'Dedicated-D4'
 @description('Name for the Container Registry associated with the Container App.')
 param containerRegistryName string = ''
 @description('Whether the container image exists in the Container Registry. Defaults to true.')
@@ -86,8 +86,8 @@ param containerIngress ingressConfigInfo = {
 }
 @description('Resource configuration for the container. Defaults to 0.5 CPU and 1.0Gi memory.')
 param containerResources resourceConfigInfo = {
-  cpu: '0.5'
-  memory: '1.0Gi'
+  cpu: 4
+  memory: '16.0Gi'
 }
 @description('Scale configuration for the container. Defaults to min 1 replica, max 3 replicas, with HTTP rule for 20 concurrent requests.')
 param containerScale scaleConfigInfo = {

@@ -2,7 +2,7 @@ import { modelDeploymentInfo, raiPolicyInfo } from './ai_ml/ai-services.bicep'
 import { identityInfo } from './security/managed-identity.bicep'
 import { vnetConfigInfo } from './containers/vnet-config.bicep'
 
-targetScope = 'subscription'
+targetScope = 'resourceGroup'
 
 var audienceMap = {
   AzureCloud: '41b23e61-6c1e-4545-b367-cd054e0ed4b4'
@@ -11,11 +11,13 @@ var audienceMap = {
   AzureChinaCloud: '49f817b6-84ae-4cc0-928c-73f27289b3aa'
 }
 
-var tenantId = subscription().tenantId
-var cloud = environment().name
-var audience = audienceMap[cloud]
-var tenant = uri(environment().authentication.loginEndpoint, tenantId)
-var issuer = 'https://sts.windows.net/${tenantId}/'
+var tenantId = ''
+
+// var tenantId = subscription().tenantId
+// var cloud = environment().name
+// var audience = audienceMap[cloud]
+// var tenant = uri(environment().authentication.loginEndpoint, tenantId)
+// var issuer = 'https://sts.windows.net/${tenantId}/'
 
 @description('Environment name used as a tag for all resources. This is directly mapped to the azd-environment.')
 param environmentName string = ''
@@ -71,7 +73,7 @@ param tags object = {
 
 var abbrs = loadJsonContent('./abbreviations.json')
 var roles = loadJsonContent('./roles.json')
-var suffix = toLower(uniqueString(subscription().id, workloadName, location, _resourceGroupName))
+var suffix = toLower(uniqueString(resourceGroup().id, workloadName, location, _resourceGroupName))
 
 @description('The name of the Azure Storage Account Private Endpoint. If left empty, a random name will be generated.')
 param azureBlobStorageAccountPe string = ''
@@ -348,20 +350,20 @@ param identities identityInfo[] = union([], [{
 }])
 
 resource contributorRole 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
-  scope: resourceGroup
+  // scope: resourceGroup
   name: roles.general.contributor
 }
 
 resource appConfigDataOwnerRole 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
-  scope: resourceGroup
+  // scope: resourceGroup
   name: roles.configuration.appConfigurationDataOwner
 }
 
-resource resourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' = {
-  name: resourceGroupName
-  location: location
-  tags: union(tags, {})
-}
+// resource resourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' = {
+//   name: resourceGroupName
+//   location: location
+//   tags: union(tags, {})
+// }
 
 var appConfigDataOwnerIdentityAssignments = [
   for identity in identities: {
@@ -390,14 +392,14 @@ var contributorIdentityAssignments = [
 var resourceGroupRoleAssignmentName = '${_resourceGroupName}-role'
 module resourceGroupRoleAssignment './security/resource-group-role-assignment.bicep' = {
   name: resourceGroupRoleAssignmentName
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     roleAssignments: concat(contributorIdentityAssignments, [], allConfigDataOwnerIdentityAssignments)
   }
 }
 
 resource keyVaultSecretsUserRole 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
-  scope: resourceGroup
+  // scope: resourceGroup
   name: roles.security.keyVaultSecretsUser
 }
 
@@ -465,7 +467,7 @@ var _vnetReuse = _azureReuseConfig.vnetReuse
 
 module vaultDnsZone './network/private-dns-zones.bicep' = if (_networkIsolation && !_vnetReuse) {
   name: 'vault-dnzones'
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     dnsZoneName: 'privatelink.vaultcore.azure.net'
     tags: tags
@@ -475,7 +477,7 @@ module vaultDnsZone './network/private-dns-zones.bicep' = if (_networkIsolation 
 
 module blobDnsZone './network/private-dns-zones.bicep' = if (_networkIsolation && !_vnetReuse) {
   name: 'blob-dnzones'
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     dnsZoneName: 'privatelink.blob.${environment().suffixes.storage}'
     tags: tags
@@ -484,7 +486,7 @@ module blobDnsZone './network/private-dns-zones.bicep' = if (_networkIsolation &
 }
 
 module queueDnsZone './network/private-dns-zones.bicep' = if (_networkIsolation && !_vnetReuse) {
-  scope : resourceGroup
+  // scope : resourceGroup
   name: 'queue-dnzones'
   params: {
     dnsZoneName: 'privatelink.queue.${environment().suffixes.storage}'
@@ -494,7 +496,7 @@ module queueDnsZone './network/private-dns-zones.bicep' = if (_networkIsolation 
 }
 
 module tableDnsZone './network/private-dns-zones.bicep' = if (_networkIsolation && !_vnetReuse) {
-  scope : resourceGroup
+  // scope : resourceGroup
   name: 'table-dnzones'
   params: {
     dnsZoneName: 'privatelink.table.${environment().suffixes.storage}'
@@ -504,7 +506,7 @@ module tableDnsZone './network/private-dns-zones.bicep' = if (_networkIsolation 
 }
 
 module fileDnsZone './network/private-dns-zones.bicep' = if (_networkIsolation && !_vnetReuse) {
-  scope : resourceGroup
+  // scope : resourceGroup
   name: 'file-dnzones'
   params: {
     dnsZoneName: 'privatelink.file.${environment().suffixes.storage}'
@@ -515,7 +517,7 @@ module fileDnsZone './network/private-dns-zones.bicep' = if (_networkIsolation &
 
 module documentsDnsZone './network/private-dns-zones.bicep' = if (_networkIsolation && !_vnetReuse) {
   name: 'documents-dnzones'
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     dnsZoneName: 'privatelink.documents.azure.com'
     tags: tags
@@ -525,7 +527,7 @@ module documentsDnsZone './network/private-dns-zones.bicep' = if (_networkIsolat
 
 module appConfigDnsZone './network/private-dns-zones.bicep' = if (_networkIsolation && !_vnetReuse) {
   name: 'appconfig-dnzones'
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     dnsZoneName: 'privatelink.azconfig.io'
     tags: tags
@@ -535,7 +537,7 @@ module appConfigDnsZone './network/private-dns-zones.bicep' = if (_networkIsolat
 
 module websitesDnsZone './network/private-dns-zones.bicep' = if (_networkIsolation && !_vnetReuse) {
   name: 'websites-dnzones'
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     dnsZoneName: 'privatelink.azurewebsites.net'
     tags: tags
@@ -545,7 +547,7 @@ module websitesDnsZone './network/private-dns-zones.bicep' = if (_networkIsolati
 
 module aiservicesDnsZone './network/private-dns-zones.bicep' = if (_networkIsolation && !_vnetReuse) {
   name: 'aiservices-dnzones'
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     dnsZoneName: 'privatelink.cognitiveservices.azure.com'
     tags: tags
@@ -555,7 +557,7 @@ module aiservicesDnsZone './network/private-dns-zones.bicep' = if (_networkIsola
 
 module openaiDnsZone './network/private-dns-zones.bicep' = if (_networkIsolation && !_vnetReuse) {
   name: 'openai-dnzones'
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     dnsZoneName: 'privatelink.openai.azure.com'
     tags: tags
@@ -565,7 +567,7 @@ module openaiDnsZone './network/private-dns-zones.bicep' = if (_networkIsolation
 
 module searchDnsZone './network/private-dns-zones.bicep' = if (_networkIsolation && !_vnetReuse) {
   name: 'searchs-dnzones'
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     dnsZoneName: 'privatelink.search.windows.net'
     tags: tags
@@ -575,7 +577,7 @@ module searchDnsZone './network/private-dns-zones.bicep' = if (_networkIsolation
 
 module containerRegistryDnsZone './network/private-dns-zones.bicep' = if (_networkIsolation && !_vnetReuse) {
   name: 'cr-dnzones'
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     dnsZoneName: 'privatelink.azurecr.io'
     tags: tags
@@ -585,7 +587,7 @@ module containerRegistryDnsZone './network/private-dns-zones.bicep' = if (_netwo
 
 module automationDnsZone './network/private-dns-zones.bicep' = if (_networkIsolation && !_vnetReuse) {
   name: 'automation-dnzones'
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     dnsZoneName: 'privatelink.agentsvc.azure-automation.net'
     tags: tags
@@ -595,7 +597,7 @@ module automationDnsZone './network/private-dns-zones.bicep' = if (_networkIsola
 
 module odsInsightsDnsZone './network/private-dns-zones.bicep' = if (_networkIsolation && !_vnetReuse) {
   name: 'odsinsights-dnzones'
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     dnsZoneName: 'privatelink.ods.opinsights.azure.com'
     tags: tags
@@ -605,7 +607,7 @@ module odsInsightsDnsZone './network/private-dns-zones.bicep' = if (_networkIsol
 
 module omsInsightsDnsZone './network/private-dns-zones.bicep' = if (_networkIsolation && !_vnetReuse) {
   name: 'omsinsights-dnzones'
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     dnsZoneName: 'privatelink.oms.opinsights.azure.com'
     tags: tags
@@ -615,7 +617,7 @@ module omsInsightsDnsZone './network/private-dns-zones.bicep' = if (_networkIsol
 
 module azMonitorDnsZone './network/private-dns-zones.bicep' = if (_networkIsolation && !_vnetReuse) {
   name: 'azmonitor-dnzones'
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     dnsZoneName: 'privatelink.monitor.azure.com'
     tags: tags
@@ -625,7 +627,7 @@ module azMonitorDnsZone './network/private-dns-zones.bicep' = if (_networkIsolat
 
 module acaDnsZone './network/private-dns-zones.bicep' = if (_networkIsolation && !_vnetReuse) {
   name: 'aca-dnzones'
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     dnsZoneName: 'privatelink.eastus2.azurecontainerapps.io'
     tags: tags
@@ -636,7 +638,7 @@ module acaDnsZone './network/private-dns-zones.bicep' = if (_networkIsolation &&
 var keyVaultPeName = '${abbrs.security.keyVault}${abbrs.security.privateEndpoint}${suffix}'
 module keyvaultpe './network/private-endpoint.bicep' = if (_networkIsolation && !_vnetReuse) {
   name: keyVaultPeName
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     location: location
     name: keyVaultPeName
@@ -650,7 +652,7 @@ module keyvaultpe './network/private-endpoint.bicep' = if (_networkIsolation && 
 
 module keyVault './security/key-vault.bicep' = {
   name: _keyVaultName
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     keyVaultReuse : _azureReuseConfig.keyVaultReuse
     existingKeyVaultResourceGroupName: _azureReuseConfig.existingKeyVaultResourceGroupName
@@ -772,7 +774,7 @@ var appSettings = [
 var appConfigurationPEName = '${abbrs.configuration.appConfiguration}${abbrs.security.privateEndpoint}${suffix}'
 module appConfigPe './network/private-endpoint.bicep' = if (_networkIsolation && !_vnetReuse) {
   name: appConfigurationPEName
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     location: location
     name: appConfigurationPEName
@@ -786,7 +788,7 @@ module appConfigPe './network/private-endpoint.bicep' = if (_networkIsolation &&
 
 var applicationManagedIdentityName = '${abbrs.security.managedIdentity}${abbrs.configuration.appConfiguration}${suffix}'
 module applicationManagedIdentity './security/managed-identity.bicep' = {
-  scope: resourceGroup
+  // scope: resourceGroup
   name: applicationManagedIdentityName
   params: {
     name: applicationManagedIdentityName
@@ -797,7 +799,7 @@ module applicationManagedIdentity './security/managed-identity.bicep' = {
 
 module appConfig './app_config/appconfig.bicep' = if (provisionAppConfig) {
   name: 'appconfig'
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     //administratorObjectId: principalId
     //administratorPrincipalType: 'User'
@@ -822,7 +824,7 @@ module appConfig './app_config/appconfig.bicep' = if (provisionAppConfig) {
 var logAnalyticsPEName = '${abbrs.managementGovernance.logAnalyticsWorkspace}${abbrs.security.privateEndpoint}${suffix}'
 module logAnalyticsPe './network/private-endpoint.bicep' = if (_networkIsolation && !_vnetReuse) {
   name: logAnalyticsPEName
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     location: location
     name: logAnalyticsPEName
@@ -838,7 +840,7 @@ module logAnalyticsPe './network/private-endpoint.bicep' = if (_networkIsolation
 var logAnalyticsWorkspaceName = '${abbrs.managementGovernance.logAnalyticsWorkspace}${suffix}'
 module logAnalyticsWorkspace './management_governance/log-analytics-workspace.bicep' = {
   name: logAnalyticsWorkspaceName
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     name: logAnalyticsWorkspaceName
     location: location
@@ -866,7 +868,7 @@ module appInsightsPe './network/private-endpoint.bicep' = if (_networkIsolation 
 var applicationInsightsName = '${abbrs.managementGovernance.applicationInsights}${suffix}'
 module applicationInsights './management_governance/application-insights.bicep' = {
   name: applicationInsightsName
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     name: applicationInsightsName
     location: location
@@ -878,7 +880,7 @@ module applicationInsights './management_governance/application-insights.bicep' 
 }
 
 module azureMonitorPrivateLinkScope './security/private-link-scope.bicep' = if (_networkIsolation && !_vnetReuse) {
-  scope: resourceGroup
+  // scope: resourceGroup
   name: '${abbrs.networking.privateLink}${suffix}'
   params: {
     privateLinkScopeName: '${abbrs.networking.privateLink}${suffix}'
@@ -890,12 +892,12 @@ module azureMonitorPrivateLinkScope './security/private-link-scope.bicep' = if (
 }
 
 resource cognitiveServicesUserRole 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
-  scope: resourceGroup
+  // scope: resourceGroup
   name: roles.ai.cognitiveServicesUser
 }
 
 resource cognitiveServicesOpenAIUserRole 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
-  scope: resourceGroup
+  // scope: resourceGroup
   name: roles.ai.cognitiveServicesOpenAIUser
 }
 
@@ -918,7 +920,7 @@ var cognitiveServicesOpenAIUserRoleAssignments = [
 var aiServiceManagedIdentityName = '${abbrs.security.managedIdentity}${abbrs.ai.aiServices}${suffix}'
 module aiServiceManagedIdentity './security/managed-identity.bicep' = {
   name: aiServiceManagedIdentityName
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     name: aiServiceManagedIdentityName
     location: location
@@ -929,7 +931,7 @@ module aiServiceManagedIdentity './security/managed-identity.bicep' = {
 var aiServicesPeName = '${abbrs.ai.aiServices}${abbrs.security.privateEndpoint}${suffix}'
 module aiServicesPe './network/private-endpoint.bicep' = if (_networkIsolation && !_vnetReuse) {
   name: aiServicesPeName
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     location: location
     name: aiServicesPeName
@@ -943,7 +945,7 @@ module aiServicesPe './network/private-endpoint.bicep' = if (_networkIsolation &
 
 module aiServices './ai_ml/ai-services.bicep' = {
   name: _aiServicesName
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     identityId: aiServiceManagedIdentity.outputs.id
     identityClientId: aiServiceManagedIdentity.outputs.clientId
@@ -966,7 +968,7 @@ module aiServices './ai_ml/ai-services.bicep' = {
 // Require self-referencing role assignment for AI Services identity to access Azure OpenAI.
 module aiServicesRoleAssignment './security/resource-role-assignment.json' = {
   name: '${aiServicesName}-role'
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     resourceId: aiServices.outputs.id
     roleAssignments: [
@@ -982,32 +984,32 @@ module aiServicesRoleAssignment './security/resource-role-assignment.json' = {
 // Required RBAC roles for Azure Functions to access the storage account
 // https://learn.microsoft.com/en-us/azure/azure-functions/functions-reference?tabs=blob&pivots=programming-language-python#connecting-to-host-storage-with-an-identity
 resource storageAccountContributorRole 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
-  scope: resourceGroup
+  // scope: resourceGroup
   name: roles.storage.storageAccountContributor
 }
 
 resource storageBlobDataContributorRole 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
-  scope: resourceGroup
+  // scope: resourceGroup
   name: roles.storage.storageBlobDataContributor
 }
 
 resource storageBlobDataOwnerRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
-  scope: resourceGroup
+  // scope: resourceGroup
   name: roles.storage.storageBlobDataOwner
 }
 
 resource storageFileDataPrivilegedContributorRole 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
-  scope: resourceGroup
+  // scope: resourceGroup
   name: roles.storage.storageFileDataPrivilegedContributor
 }
 
 resource storageTableDataContributorRole 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
-  scope: resourceGroup
+  // scope: resourceGroup
   name: roles.storage.storageTableDataContributor
 }
 
 resource storageQueueDataContributorRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
-  scope: resourceGroup
+  // scope: resourceGroup
   name: roles.storage.storageQueueDataContributor
 }
 
@@ -1061,7 +1063,7 @@ var storageQueueDataContributorIdentityAssignments = [
 
 module vnet './network/vnet.bicep' = if (_networkIsolation && !_vnetReuse) {
   name: 'virtual-network'
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     location: location
     vnetName: _vnetName
@@ -1079,7 +1081,7 @@ module vnet './network/vnet.bicep' = if (_networkIsolation && !_vnetReuse) {
 }
 
 module vpnGateway './network/vnet-vpn-gateway.bicep' = if (_networkIsolation && !_vnetReuse && _deployVPN) {
-  scope : resourceGroup
+  // scope : resourceGroup
   name: 'vpn-gateway'
   params: {
     location: location
@@ -1090,7 +1092,7 @@ module vpnGateway './network/vnet-vpn-gateway.bicep' = if (_networkIsolation && 
 
 module storageAccountPe './network/private-endpoint.bicep' = if (_networkIsolation && !_vnetReuse) {
   name: 'storage-blob-pe'
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     location: location
     name: _azureBlobStorageAccountPe
@@ -1103,7 +1105,7 @@ module storageAccountPe './network/private-endpoint.bicep' = if (_networkIsolati
 }
 
 module storagetablepe './network/private-endpoint.bicep' = if (_networkIsolation && !_vnetReuse) {
-  scope : resourceGroup
+  // scope : resourceGroup
   name: 'storage-table-pe'
   params: {
     location: location
@@ -1117,7 +1119,7 @@ module storagetablepe './network/private-endpoint.bicep' = if (_networkIsolation
 }
 
 module storagequeuepe './network/private-endpoint.bicep' = if (_networkIsolation && !_vnetReuse) {
-  scope : resourceGroup
+  // scope : resourceGroup
   name: 'storage-queue-pe'
   params: {
     location: location
@@ -1131,7 +1133,7 @@ module storagequeuepe './network/private-endpoint.bicep' = if (_networkIsolation
 }
 
 module storagefilepe './network/private-endpoint.bicep' = if (_networkIsolation && !_vnetReuse) {
-  scope : resourceGroup
+  // scope : resourceGroup
   name: 'storage-file-pe'
   params: {
     location: location
@@ -1146,7 +1148,7 @@ module storagefilepe './network/private-endpoint.bicep' = if (_networkIsolation 
 
 module storageAccount './storage/storage-account.bicep' = {
   name: _storageAccountName
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     name: _storageAccountName
     location: location
@@ -1177,7 +1179,7 @@ module storageAccount './storage/storage-account.bicep' = {
 var documentsContainerName = 'documents'
 module documentsContainer 'storage/storage-blob-container.bicep' = {
   name: '${storageAccount.name}-container-${documentsContainerName}'
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     name: documentsContainerName
     storageAccountName: storageAccount.outputs.name
@@ -1185,12 +1187,12 @@ module documentsContainer 'storage/storage-blob-container.bicep' = {
 }
 
 resource acrPushRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
-  scope: resourceGroup
+  // scope: resourceGroup
   name: roles.containers.acrPush
 }
 
 resource acrPullRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
-  scope: resourceGroup
+  // scope: resourceGroup
   name: roles.containers.acrPull
 }
 
@@ -1213,7 +1215,7 @@ var acrPullIdentityAssignments = [
 var containerRegistryPEName = '${abbrs.containers.containerRegistry}${abbrs.security.privateEndpoint}${suffix}'
 module containerRegistryPe './network/private-endpoint.bicep' = if (_networkIsolation && !_vnetReuse) {
   name: containerRegistryPEName
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     location: location
     name: containerRegistryPEName
@@ -1228,7 +1230,7 @@ module containerRegistryPe './network/private-endpoint.bicep' = if (_networkIsol
 var crManagedIdentityName = '${abbrs.security.managedIdentity}${abbrs.containers.containerRegistry}-${suffix}'
 module crManagedIdentity './security/managed-identity.bicep' = {
   name: crManagedIdentityName
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     name: crManagedIdentityName
     location: location
@@ -1239,7 +1241,7 @@ module crManagedIdentity './security/managed-identity.bicep' = {
 var containerRegistryName = '${abbrs.containers.containerRegistry}${suffix}'
 module containerRegistry 'containers/container-registry.bicep' = {
   name: containerRegistryName
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     identityId: crManagedIdentity.outputs.id
     containerRegistryReuse: _azureReuseConfig.containerRegistryReuse
@@ -1259,7 +1261,7 @@ module containerRegistry 'containers/container-registry.bicep' = {
 var caeManagedIdentityName = '${abbrs.security.managedIdentity}${abbrs.containers.containerAppsEnvironment}${suffix}'
 module caeManagedIdentity './security/managed-identity.bicep' = {
   name: caeManagedIdentityName
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     name: caeManagedIdentityName
     location: location
@@ -1270,7 +1272,7 @@ module caeManagedIdentity './security/managed-identity.bicep' = {
 var containerAppsPeName = '${abbrs.containers.containerAppsEnvironment}${abbrs.security.privateEndpoint}${suffix}'
 module containerAppPe './network/private-endpoint.bicep' = if (_networkIsolation && !_vnetReuse) {
   name: containerAppsPeName
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     location: location
     name: containerAppsPeName
@@ -1285,7 +1287,7 @@ module containerAppPe './network/private-endpoint.bicep' = if (_networkIsolation
 var containerAppsEnvironmentName = '${abbrs.containers.containerAppsEnvironment}${suffix}'
 module containerAppsEnvironment 'containers/container-apps-environment.bicep' = {
   name: containerAppsEnvironmentName
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     identityId: caeManagedIdentity.outputs.id
     name: containerAppsEnvironmentName
@@ -1311,7 +1313,7 @@ module containerAppsEnvironment 'containers/container-apps-environment.bicep' = 
 
 module containerAppsDnsZone './network/private-dns-zones.bicep' = if (_networkIsolation && !_vnetReuse) {
   name: 'cae-dnzones'
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     dnsZoneName: concat('privatelink.', split(containerAppsEnvironment.outputs.properties.defaultDomain, '.')[1], '.azurecontainerapps.io')
     tags: tags
@@ -1320,7 +1322,7 @@ module containerAppsDnsZone './network/private-dns-zones.bicep' = if (_networkIs
 }
 
 resource azureMLDataScientistRole 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
-  scope: resourceGroup
+  // scope: resourceGroup
   name: roles.ai.azureMLDataScientist
 }
 
@@ -1335,7 +1337,7 @@ var azureMLDataScientistRoleAssignments = [
 var aiHubPeName = '${abbrs.ai.aiHub}${abbrs.security.privateEndpoint}${suffix}'
 module aiHubPe './network/private-endpoint.bicep' = if (_networkIsolation && !_vnetReuse) {
   name: aiHubPeName
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     location: location
     name: aiHubPeName
@@ -1350,7 +1352,7 @@ module aiHubPe './network/private-endpoint.bicep' = if (_networkIsolation && !_v
 var aiHubName = '${abbrs.ai.aiHub}${suffix}'
 module aiHub './ai_ml/ai-hub.bicep' = {
   name: aiHubName
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     name: aiHubName
     friendlyName: 'Hub - Python AI Document Pipeline Sample'
@@ -1370,7 +1372,7 @@ module aiHub './ai_ml/ai-hub.bicep' = {
 var aiHubProjectName = '${abbrs.ai.aiHubProject}${suffix}'
 module aiHubProject './ai_ml/ai-hub-project.bicep' = {
   name: aiHubProjectName
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     name: aiHubProjectName
     friendlyName: 'Project - Python AI Document Pipeline Sample'
@@ -1384,7 +1386,7 @@ module aiHubProject './ai_ml/ai-hub-project.bicep' = {
 
 var vmManagedIdentityName = '${abbrs.security.managedIdentity}${abbrs.compute.virtualMachine}${suffix}'
 module vmManagedIdentity './security/managed-identity.bicep' = if (_networkIsolation && !_vnetReuse && _deployVM) {
-  scope: resourceGroup
+  // scope: resourceGroup
   name: vmManagedIdentityName
   params: {
     name: vmManagedIdentityName
@@ -1395,7 +1397,7 @@ module vmManagedIdentity './security/managed-identity.bicep' = if (_networkIsola
 
 module testvm './vm/dsvm.bicep' = if (_networkIsolation && !_vnetReuse && _deployVM)  {
   name: 'testvm'
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     location: location
     name: _ztVmName
@@ -1421,7 +1423,7 @@ var applicationInsightsKeySecretName = 'applicationinsightskey'
 
 module containerAppManagedIdentity './security/managed-identity.bicep' = {
   name: '${abbrs.security.managedIdentity}${abbrs.containers.containerApp}${suffix}'
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     name: '${abbrs.security.managedIdentity}${abbrs.containers.containerApp}${suffix}'
     location: location
@@ -1431,7 +1433,7 @@ module containerAppManagedIdentity './security/managed-identity.bicep' = {
 
 module containerRegistryIdentityRoleAssignment './security/resource-role-assignment.json' = {
   name: 'containerRegistryIdentityRoleAssignment'
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     resourceId: containerRegistry.outputs.id
     roleAssignments: [
@@ -1446,7 +1448,7 @@ module containerRegistryIdentityRoleAssignment './security/resource-role-assignm
 
 module storageAccountIdentityRoleAssignment './security/resource-role-assignment.json' = {
   name: 'storageAccountIdentityRoleAssignment'
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     resourceId: storageAccount.outputs.id
     roleAssignments: [
@@ -1486,7 +1488,7 @@ module storageAccountIdentityRoleAssignment './security/resource-role-assignment
 
 module aiServicesIdentityRoleAssignment './security/resource-role-assignment.json' = {
   name: 'aiServicesIdentityRoleAssignment'
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     resourceId: aiServices.outputs.id
     roleAssignments: [
@@ -1512,7 +1514,7 @@ module aiServicesIdentityRoleAssignment './security/resource-role-assignment.jso
 var documentsQueueName = 'documents'
 module documentsQueue './storage/storage-queue.bicep' = {
   name: '${abbrs.storage.storageAccount}${suffix}-${documentsQueueName}'
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     name: documentsQueueName
     storageAccountName: storageAccount.name
@@ -1521,7 +1523,7 @@ module documentsQueue './storage/storage-queue.bicep' = {
 
 module containerApp './containers/container-app.bicep' = {
   name: '${abbrs.containers.containerApp}${suffix}'
-  scope: resourceGroup
+  // scope: resourceGroup
   params: {
     name: '${abbrs.containers.containerApp}${suffix}'
     location: location
@@ -1664,8 +1666,8 @@ module containerApp './containers/container-app.bicep' = {
 
 output environmentInfo object = {
   workloadName: workloadName
-  azureResourceGroup: resourceGroup.name
-  azureLocation: resourceGroup.location
+  azureResourceGroup: workloadName
+  azureLocation: location
   containerRegistryName: containerRegistry.outputs.name
   azureAIServicesEndpoint: aiServices.outputs.endpoint
   azureOpenAIEndpoint: aiServices.outputs.openAIEndpoint

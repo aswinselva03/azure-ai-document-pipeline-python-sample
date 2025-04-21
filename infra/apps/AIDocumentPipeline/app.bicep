@@ -31,7 +31,7 @@ param chatModelDeployment string = 'gpt-4o'
 var abbrs = loadJsonContent('../../abbreviations.json')
 var roles = loadJsonContent('../../roles.json')
 //var resourceToken = toLower(uniqueString(subscription().id, workloadName, location))
-var resourceToken = toLower(uniqueString(subscription().id, workloadName, location))
+var resourceToken = toLower(uniqueString(resourceGroup().id, workloadName, location))
 
 var containerRegistryName = '${abbrs.containers.containerRegistry}${resourceToken}'
 resource containerRegistryRef 'Microsoft.ContainerRegistry/registries@2023-11-01-preview' existing = {

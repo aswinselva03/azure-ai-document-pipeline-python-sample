@@ -7,8 +7,8 @@ var audienceMap = {
   AzureChinaCloud: '49f817b6-84ae-4cc0-928c-73f27289b3aa'
 }
 
-var tenantId = subscription().tenantId
-var cloud = environment().name
-var audience = audienceMap[cloud]
-var tenant = uri(environment().authentication.loginEndpoint, tenantId)
-var issuer = 'https://sts.windows.net/${tenantId}/'
+// var tenantId = subscription().tenantId
+// var cloud = environment().name
+// var audience = audienceMap[cloud]
+// var tenant = uri(environment().authentication.loginEndpoint, tenantId)
+// var issuer = 'https://sts.windows.net/${tenantId}/'

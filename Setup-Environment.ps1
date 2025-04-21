@@ -3,6 +3,7 @@ param
     [Parameter(Mandatory = $true)]
     [string]$DeploymentName,
     [Parameter(Mandatory = $true)]
+    [string]$ResourceGroupName,
     [string]$Location,
     [switch]$IsLocal,
     [switch]$SkipInfrastructure,
@@ -19,6 +20,7 @@ else {
     Write-Host "Deploying infrastructure..."
     $InfrastructureOutputs = (./infra/Deploy-Infrastructure.ps1 `
             -DeploymentName $DeploymentName `
+            -ResourceGroupName $ResourceGroupName `
             -Location $Location `
             -WhatIf:$WhatIf)
 
@@ -55,7 +57,6 @@ if ($IsLocal) {
 }
 else {
     Write-Host "Deploying AI Document Pipeline app to Azure..."
-
     $AppOutputs = (./infra/apps/AIDocumentPipeline/Deploy-App.ps1 `
             -InfrastructureOutputsPath './infra/InfrastructureOutputs.json')
 }
